@@ -43,13 +43,17 @@ object PaymentParser {
 
     private val verifiedBankPackagePatterns: List<Pair<String, String>> = listOf(
         "com.f1soft.banksmart" to "Mobile Banking",
+        "com.f1soft." to "Mobile Banking",
         "com.nabilbank" to "Nabil Bank",
+        "com.nabil." to "Nabil Bank",
         "com.nicasia" to "NIC Asia Bank",
         "com.globalime" to "Global IME Bank",
         "com.globalsmart" to "Global IME Bank",
         "com.siddharthabank" to "Siddhartha Bank",
+        "com.sbl." to "Siddhartha Bank",
         "com.himalayanbank" to "Himalayan Bank",
         "com.sanimabank" to "Sanima Bank",
+        "sanimasajilo" to "Sanima Bank",
         "com.laxmibank" to "Laxmi Sunrise Bank",
         "com.sunrisebank" to "Laxmi Sunrise Bank",
         "com.prabhubank" to "Prabhu Bank",
@@ -72,8 +76,18 @@ object PaymentParser {
         "com.kamanasewa" to "Kamana Sewa Bank",
         "com.mahalaxmibank" to "Mahalaxmi Bikas Bank",
         "com.shangrilabank" to "Shangrila Bank",
+        "namastepay" to "Namaste Pay",
+        "prabhupay" to "PrabhuPay",
+        "cellpay" to "CellPay",
+        "mypay" to "MyPay",
+        "qpay" to "QPay",
+        "moru" to "Moru",
         "banksmart" to "Mobile Banking",
+        "smartbank" to "Mobile Banking",
+        "mobilebank" to "Mobile Banking",
         "mobank" to "Mobile Banking",
+        "mbank" to "Mobile Banking",
+        "digibank" to "Mobile Banking",
         "fonepay" to "Fonepay",
         "esewa" to "eSewa",
         "khalti" to "Khalti",
@@ -84,12 +98,21 @@ object PaymentParser {
     private val smsPackages = setOf(
         "com.google.android.apps.messaging",
         "com.android.mms",
+        "com.android.messaging",
         "com.samsung.android.messaging",
         "com.miui.mms",
         "com.oneplus.mms",
         "com.coloros.mms",
         "com.realme.mms",
-        "com.vivo.message"
+        "com.vivo.message",
+        "com.truecaller",
+        "com.microsoft.android.smsorganizer",
+        "com.huawei.message",
+        "com.transsion.messaging",
+        "com.nothing.messaging",
+        "com.asus.message",
+        "com.sonyericsson.conversations",
+        "com.lge.message"
     )
 
     private val blockedNonFinancialPackages = listOf(
@@ -261,17 +284,19 @@ object PaymentParser {
         // Reject personal 10-digit / +977 mobile numbers so someone cannot fake a payment via SMS
         if (personalPhoneNumberRegex.matches(trimmedTitle)) return false
 
+        val cleanedShortcode = trimmedTitle.replace(Regex("""\s*\([^)]*\)$"""), "").trim()
         val titleLower = trimmedTitle.lowercase(Locale.US)
         val senderMatchesKnownBank = trustedSmsSenderHints.any { titleLower.contains(it) }
-        val isTelecomShortcode = (uppercaseShortcodeRegex.matches(trimmedTitle) && trimmedTitle.any { it.isLetter() }) ||
-            numericShortcodeRegex.matches(trimmedTitle)
+        val isTelecomShortcode = (uppercaseShortcodeRegex.matches(cleanedShortcode) && cleanedShortcode.any { it.isLetter() }) ||
+            numericShortcodeRegex.matches(cleanedShortcode)
 
         if (!senderMatchesKnownBank && !isTelecomShortcode) return false
 
-        // Body must also reference currency or a bank/wallet account
+        // Body must also reference currency or a bank/wallet account (English or Nepali)
         val hasFinancialContext = listOf(
             "a/c", "account", "esewa", "khalti", "ime pay", "imepay",
-            "fonepay", "connectips", "bank", "npr", "nrs", "rs.", "rs "
+            "fonepay", "connectips", "bank", "npr", "nrs", "rs.", "rs ",
+            "rupees", "rupaiya", "रु", "रू", "रुपैयाँ", "खाता", "भुक्तानी", "प्राप्त", "जम्मा"
         ).any { lowerBody.contains(it) }
 
         return hasFinancialContext

@@ -92,7 +92,7 @@ fun SpeakerHomeScreen(
     todaySummary: TodaySummary,
     recentPayments: List<PaymentRecord>,
     permissionStatus: PermissionStatus,
-    onToggleSpeaker: () -> Unit,
+    onSetSpeakerEnabled: (Boolean) -> Unit,
     onTestVoice: () -> Unit,
     onToggleVolumeBoost: () -> Unit,
     onCycleLanguage: () -> Unit,
@@ -273,18 +273,32 @@ fun SpeakerHomeScreen(
             }
         }
 
-        // Primary ON / OFF speaker action
+        // Explicit Turn on / Turn off two-button speaker control
         item {
-            PrimaryActionButton(
-                text = if (settings.speakerEnabled) "Speaker on" else "Turn on speaker",
-                leadingIcon = if (settings.speakerEnabled) {
-                    Icons.AutoMirrored.Rounded.VolumeUp
-                } else {
-                    Icons.AutoMirrored.Rounded.VolumeOff
-                },
-                primaryStyle = settings.speakerEnabled,
-                onClick = onToggleSpeaker
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                PrimaryActionButton(
+                    text = "Turn on",
+                    leadingIcon = Icons.AutoMirrored.Rounded.VolumeUp,
+                    primaryStyle = settings.speakerEnabled,
+                    onClick = {
+                        onSetSpeakerEnabled(true)
+                        if (!permissionStatus.notificationAccessGranted) {
+                            PermissionHelper.openNotificationListenerSettings(context)
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                PrimaryActionButton(
+                    text = "Turn off",
+                    leadingIcon = Icons.AutoMirrored.Rounded.VolumeOff,
+                    primaryStyle = !settings.speakerEnabled,
+                    onClick = { onSetSpeakerEnabled(false) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         // 4 equal-width quick controls on strict 4px grid

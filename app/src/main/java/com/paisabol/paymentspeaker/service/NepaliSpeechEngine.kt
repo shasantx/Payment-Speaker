@@ -45,7 +45,7 @@ class NepaliSpeechEngine(context: Context) : TextToSpeech.OnInitListener {
         if (status == TextToSpeech.SUCCESS) {
             tts?.setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build()
             )
@@ -151,53 +151,37 @@ class NepaliSpeechEngine(context: Context) : TextToSpeech.OnInitListener {
         text: String,
         language: SpeechLanguage
     ): String {
-        val nepaliLocale = Locale("ne", "NP")
-        val hindiLocale = Locale("hi", "IN")
-        val indianEnglishLocale = Locale("en", "IN")
+        val nepaliLocale = Locale.Builder().setLanguage("ne").setRegion("NP").build()
+        val hindiLocale = Locale.Builder().setLanguage("hi").setRegion("IN").build()
+        val indianEnglishLocale = Locale.Builder().setLanguage("en").setRegion("IN").build()
 
         return when (language) {
             SpeechLanguage.NEPALI -> {
                 when {
-                    isLocaleUsable(engine, nepaliLocale) -> {
-                        engine.language = nepaliLocale
-                        text
-                    }
-                    isLocaleUsable(engine, hindiLocale) -> {
-                        engine.language = hindiLocale
-                        text
-                    }
+                    trySetLocale(engine, nepaliLocale) -> text
+                    trySetLocale(engine, hindiLocale) -> text
                     else -> {
-                        engine.language = if (isLocaleUsable(engine, indianEnglishLocale)) {
-                            indianEnglishLocale
-                        } else {
-                            Locale.US
+                        if (!trySetLocale(engine, indianEnglishLocale) && !trySetLocale(engine, Locale.US)) {
+                            trySetLocale(engine, Locale.getDefault())
                         }
                         transliterateBasicNepaliFallback(text)
                     }
                 }
             }
-            SpeechLanguage.ROMAN_NEPALI -> {
-                engine.language = when {
-                    isLocaleUsable(engine, indianEnglishLocale) -> indianEnglishLocale
-                    else -> Locale.US
-                }
-                text
-            }
-            SpeechLanguage.ENGLISH -> {
-                engine.language = when {
-                    isLocaleUsable(engine, indianEnglishLocale) -> indianEnglishLocale
-                    else -> Locale.US
+            SpeechLanguage.ROMAN_NEPALI, SpeechLanguage.ENGLISH -> {
+                if (!trySetLocale(engine, indianEnglishLocale) && !trySetLocale(engine, Locale.US)) {
+                    trySetLocale(engine, Locale.getDefault())
                 }
                 text
             }
         }
     }
 
-    private fun isLocaleUsable(engine: TextToSpeech, locale: Locale): Boolean {
-        val result = engine.isLanguageAvailable(locale)
-        return result == TextToSpeech.LANG_AVAILABLE ||
-            result == TextToSpeech.LANG_COUNTRY_AVAILABLE ||
-            result == TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE
+    private fun trySetLocale(engine: TextToSpeech, locale: Locale): Boolean {
+        val avail = engine.isLanguageAvailable(locale)
+        if (avail < TextToSpeech.LANG_AVAILABLE) return false
+        val applied = engine.setLanguage(locale)
+        return applied >= TextToSpeech.LANG_AVAILABLE
     }
 
     private fun transliterateBasicNepaliFallback(devanagari: String): String {
@@ -231,7 +215,7 @@ class NepaliSpeechEngine(context: Context) : TextToSpeech.OnInitListener {
 
         if (activeFocusRequest == null) {
             val attrs = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
             val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
@@ -273,6 +257,14 @@ class NepaliSpeechEngine(context: Context) : TextToSpeech.OnInitListener {
             }
             activeWakeLock = null
         }
+    }
+
+    @Synchronized
+    fun stopSpeaking() {
+        pendingQueue.clear()
+        activeUtteranceIds.clear()
+        runCatching { tts?.stop() }
+        releaseAudioAndWakeLock()
     }
 
     fun shutdown() {

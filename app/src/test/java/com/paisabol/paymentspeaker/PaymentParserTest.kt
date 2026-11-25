@@ -168,4 +168,24 @@ class PaymentParserTest {
         assertNotNull(parsed)
         assertEquals(650.0, parsed!!.amount, 0.001)
     }
+
+    @Test
+    fun parsesF1SoftSmartBankAndDevanagariSmsAlerts() {
+        val f1soft = PaymentParser.parse(
+            packageName = "com.f1soft.nabilsmartbank",
+            title = "Nabil SmartBank",
+            text = "Your account has been credited with NPR 2,100.00."
+        )
+        assertNotNull(f1soft)
+        assertEquals(2100.0, f1soft!!.amount, 0.001)
+        assertEquals("Nabil Bank", f1soft.sourceLabel)
+
+        val devanagariSms = PaymentParser.parse(
+            packageName = "com.truecaller",
+            title = "34001 (NTC)",
+            text = "तपाईंको खातामा रु. १,५०० प्राप्त भयो।"
+        )
+        assertNotNull(devanagariSms)
+        assertEquals(1500.0, devanagariSms!!.amount, 0.001)
+    }
 }

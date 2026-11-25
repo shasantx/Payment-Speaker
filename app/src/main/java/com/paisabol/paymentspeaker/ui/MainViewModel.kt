@@ -1,6 +1,8 @@
 package com.paisabol.paymentspeaker.ui
 
 import android.app.Application
+import android.content.ComponentName
+import android.service.notification.NotificationListenerService
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.paisabol.paymentspeaker.PaisaBolApp
@@ -9,6 +11,7 @@ import com.paisabol.paymentspeaker.model.AppSettings
 import com.paisabol.paymentspeaker.model.PaymentRecord
 import com.paisabol.paymentspeaker.model.PaymentSource
 import com.paisabol.paymentspeaker.model.SpeechLanguage
+import com.paisabol.paymentspeaker.service.PaymentNotificationListener
 import com.paisabol.paymentspeaker.service.PaymentSpeakerForegroundService
 import com.paisabol.paymentspeaker.util.PermissionHelper
 import com.paisabol.paymentspeaker.util.PermissionStatus
@@ -75,7 +78,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setSpeakerEnabled(enabled: Boolean) {
         settingsStore.setSpeakerEnabled(enabled)
-        syncForegroundService(enabled, _permissionStatus.value)
+        if (!enabled) {
+            speechEngine.stopSpeaking()
+        }
+        val status = PermissionHelper.checkStatus(app)
+        _permissionStatus.value = status
+        syncForegroundService(enabled, status)
     }
 
     fun cycleLanguage() {
@@ -155,6 +163,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun syncForegroundService(enabled: Boolean, status: PermissionStatus) {
         if (enabled && status.notificationAccessGranted) {
             PaymentSpeakerForegroundService.start(app)
+            runCatching {
+                NotificationListenerService.requestRebind(
+                    ComponentName(app, PaymentNotificationListener::class.java)
+                )
+            }
         } else {
             PaymentSpeakerForegroundService.stop(app)
         }

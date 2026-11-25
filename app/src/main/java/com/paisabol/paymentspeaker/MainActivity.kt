@@ -103,7 +103,7 @@ private fun PaisaBolRoot(viewModel: MainViewModel) {
                         todaySummary = todaySummary,
                         recentPayments = payments,
                         permissionStatus = permissionStatus,
-                        onToggleSpeaker = viewModel::toggleSpeaker,
+                        onSetSpeakerEnabled = viewModel::setSpeakerEnabled,
                         onTestVoice = viewModel::testVoiceOnly,
                         onToggleVolumeBoost = viewModel::toggleAutoBoostVolume,
                         onCycleLanguage = viewModel::cycleLanguage,
