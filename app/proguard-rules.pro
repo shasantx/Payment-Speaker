@@ -1,0 +1,2 @@
+-keep class com.paisabol.paymentspeaker.** { *; }
+-dontwarn kotlin.**

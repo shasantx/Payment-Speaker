@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">PaisaBol</string>
+    <string name="notification_listener_label">PaisaBol Payment Speaker</string>
+    <string name="fgs_channel_name">Payment Speaker Service</string>
+    <string name="fgs_channel_desc">Keeps PaisaBol listening for incoming payment alerts in the background</string>
+    <string name="fgs_notification_title">PaisaBol Speaker Active</string>
+    <string name="fgs_notification_text">Listening for eSewa, Khalti &amp; banking payments</string>
+</resources>

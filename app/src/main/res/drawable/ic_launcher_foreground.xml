@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Signature 4-bar PaisaBol acoustic emblem in warm ivory + matte Nepali brass -->
+    <!-- Bar 1 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M34.5,45.5 L34.5,62.5"
+        android:strokeWidth="6.2"
+        android:strokeColor="#B8F2EFE9"
+        android:strokeLineCap="round" />
+    <!-- Bar 2 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M47.5,38 L47.5,70"
+        android:strokeWidth="6.2"
+        android:strokeColor="#F2EFE9"
+        android:strokeLineCap="round" />
+    <!-- Bar 3 (tallest — warm brass accent) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M60.5,32 L60.5,76"
+        android:strokeWidth="6.2"
+        android:strokeColor="#E5A93C"
+        android:strokeLineCap="round" />
+    <!-- Bar 4 -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M73.5,42 L73.5,66"
+        android:strokeWidth="6.2"
+        android:strokeColor="#B8F2EFE9"
+        android:strokeLineCap="round" />
+</vector>
